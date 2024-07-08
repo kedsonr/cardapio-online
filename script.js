@@ -132,7 +132,7 @@ addressInput.addEventListener("input", function (event) {
 // finaliza pedido
 checkoutBtn.addEventListener("click", function () {
     const isOpen = checkFuncionamento();
-    if(!isOpen){
+    if (!isOpen) {
         Toastify({
             text: "Loja Fechada no Momento",
             duration: 3000,
@@ -141,11 +141,11 @@ checkoutBtn.addEventListener("click", function () {
             position: "left", // `left`, `center` or `right`
             stopOnFocus: true, // Prevents dismissing of toast on hover
             style: {
-              background: "#ef4444",
+                background: "#ef4444",
             },
-          }).showToast();
-       
-       return; 
+        }).showToast();
+
+        return;
     }
 
     if (card.length === 0) return;
@@ -165,7 +165,7 @@ checkoutBtn.addEventListener("click", function () {
     const message = encodeURIComponent(cardItems)
     const phone = "61998287364"
     window.open(`https://wa.me/${phone}?text=${message} endereço: ${addressInput.value}`, "_blank")
-    
+
     card = [];
     inputValue = [];
     updateCardModal();
@@ -173,18 +173,44 @@ checkoutBtn.addEventListener("click", function () {
 
 //verificaçao da hora e manupular o card horario
 function checkFuncionamento() {
-    const data = new Date();
-    const hora = data.getHours();
-    return hora >= 18 && hora < 22; 
-    //hora = loja aberta
-}
-const spanItem = document.getElementById("data-span");
-const isOpen = checkFuncionamento();
 
-if(isOpen) {
-    spanItem.classList.remove("bg-red-500");
-    spanItem.classList.add("bg-green-600");
-}else{
-    spanItem.classList.remove("bg-green-600");
-    spanItem.classList.add("bg-red-500");
+    const data = new Date();
+    const dia = data.getDay(); // 0 = Domingo, 1 = Segunda-feira, ..., 6 = Sábado
+    const hora = data.getHours();
+    const minutos = data.getMinutes();
+
+    // Segunda-feira (dia 1) é fechado
+    if (dia === 1) {
+        return false; // Fechado
+    }
+    // Verificar horário de funcionamento (18h às 22h)
+    if (hora < 18 || (hora === 22 && minutos > 55) || hora > 22) {
+        return false; // Fechado
+    }
+    return true; // Aberto
 }
+
+function exibirStatusLoja() {
+    const resultado = checkFuncionamento();
+    const status = resultado ? 'Aberto' : 'Fechado';
+    document.getElementById('statusLoja').innerText = `A loja está ${status}`;
+}
+
+// atualizaçao do status da loja
+function atualizarStatusLoja() {
+    const spanItem = document.getElementById("data-span");
+    const isOpen = checkFuncionamento();
+
+    if (isOpen) {
+        spanItem.classList.remove("bg-red-500");
+        spanItem.classList.add("bg-green-600");
+    } else {
+        spanItem.classList.remove("bg-green-600");
+        spanItem.classList.add("bg-red-500");
+    }
+}
+
+window.onload = function () {
+    exibirStatusLoja();
+    atualizarStatusLoja();
+};
